@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using UnityEngine;
 using UnityEditor;
 
@@ -13,6 +14,8 @@ public class AdvancedDuplicator : EditorWindow
 
     private Transform transform;
 
+    private ArrayList duplicatedObjects;
+
     [MenuItem("Window/Utilities/AdvancedDuplicator")]
     public static void ShowWindow()
     {
@@ -22,6 +25,7 @@ public class AdvancedDuplicator : EditorWindow
 
     private void OnSelectionChange()
     {
+        removeDuplicates();
         SetItemValues();
         Repaint();
     }
@@ -45,9 +49,35 @@ public class AdvancedDuplicator : EditorWindow
         this.objScale.vectorSet = this.selectedObject.transform.localScale;
     }
 
-    private void duplicate()
+    private void duplicate(int amount)
     {
+        removeDuplicates();
+        duplicatedObjects = new ArrayList();
         
+        for (int i = 1; i <= amount; i++)
+        {
+            Vector3 position = this.objPosition.getVector3OffsetAtPoint(i);
+            Vector3 rotation = this.objRotation.getVector3OffsetAtPoint(i);
+            Vector3 scale = this.objScale.getVector3OffsetAtPoint(i);
+
+            GameObject newObj = Instantiate(this.selectedObject);
+
+            newObj.transform.position += position;
+            newObj.transform.eulerAngles += rotation;
+            newObj.transform.localScale += scale;
+            Debug.Log(newObj.transform.position.x);
+            duplicatedObjects.Add(
+                Instantiate(newObj)
+               );
+        }
+    }
+
+    private void removeDuplicates()
+    {
+        foreach (GameObject dupe in this.duplicatedObjects)
+        {
+            Destroy(dupe.gameObject);
+        }
     }
 
     private void OnGUI()
@@ -68,8 +98,10 @@ public class AdvancedDuplicator : EditorWindow
         this.objRotation.drawGUI();
         this.objScale.drawGUI();
 
+        GUILayout.Label("Amount: ");
+
         if (GUILayout.Button("Duplicate"))
-            duplicate();
+            this.duplicate(4);
     }
 
 }

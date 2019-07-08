@@ -26,9 +26,9 @@ public class DynamicVector3Input
     {
         this.name = name;
 
-        this.x = "";
-        this.y = "";
-        this.z = "";
+        this.x = "0";
+        this.y = "0";
+        this.z = "0";
     }
 
     public Rect drawGUI()
@@ -41,21 +41,22 @@ public class DynamicVector3Input
         GUILayout.FlexibleSpace();
 
         GUILayout.Label("X");
-        EditorGUILayout.TextField(x);
+        x = EditorGUILayout.TextField(x); // Set the textfield to X and set X to be updated by the field
         GUILayout.Label("Y");
-        EditorGUILayout.TextField(y);
+        y = EditorGUILayout.TextField(y);
         GUILayout.Label("Z");
-        EditorGUILayout.TextField(z);
+        z = EditorGUILayout.TextField(z);
+
         EditorGUILayout.EndHorizontal();
         return r;
     }
 
-    public Vector3 getVector3OffsetAtPoint(int n, Vector3 input)
+    public Vector3 getVector3OffsetAtPoint(int n)
     {
         float xVal = float.Parse(this.x);
         float yVal = float.Parse(this.y);
         float zVal = float.Parse(this.z);
 
-        return new Vector3(xVal + input.x * n, yVal + input.y * n, zVal + input.z * n);
+        return new Vector3(xVal * n, yVal * n, zVal * n);
     }
 }
