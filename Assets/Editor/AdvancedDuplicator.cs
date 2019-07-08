@@ -20,7 +20,6 @@ public class AdvancedDuplicator : EditorWindow
     public static void ShowWindow()
     {
         EditorWindow.GetWindow(typeof(AdvancedDuplicator));
-        
     }
 
     private void OnSelectionChange()
@@ -65,26 +64,19 @@ public class AdvancedDuplicator : EditorWindow
             newObj.transform.position += position;
             newObj.transform.eulerAngles += rotation;
             newObj.transform.localScale += scale;
-            Debug.Log(newObj.transform.position.x);
+
             duplicatedObjects.Add(
-                Instantiate(newObj)
+                newObj
                );
         }
     }
 
-    private void removeDuplicates()
-    {
-        foreach (GameObject dupe in this.duplicatedObjects)
-        {
-            Destroy(dupe.gameObject);
-        }
-    }
 
     private void OnGUI()
     {
-        string name = this.selectedObject == null || Selection.gameObjects.Length > 1 ? "No object selected" : this.selectedObject.name;
+        string objName = this.selectedObject == null || Selection.gameObjects.Length > 1 ? "No object selected" : this.selectedObject.name;
 
-        GUILayout.Label("Duplicate Object: " + name, EditorStyles.boldLabel);
+        GUILayout.Label("Duplicate Object: " + objName, EditorStyles.boldLabel);
         if (this.selectedObject == null || Selection.gameObjects.Length > 1)
             return;
         if (this.objPosition == null)
@@ -104,4 +96,17 @@ public class AdvancedDuplicator : EditorWindow
             this.duplicate(4);
     }
 
+    private void removeDuplicates()
+    {
+        if (this.duplicatedObjects == null || this.duplicatedObjects.Count == 0)
+            return;
+        Debug.Log("deleting");
+        
+        foreach (GameObject dupe in this.duplicatedObjects)
+        {
+            DestroyImmediate(dupe);
+        }
+
+        this.duplicatedObjects.Clear();
+    }
 }
