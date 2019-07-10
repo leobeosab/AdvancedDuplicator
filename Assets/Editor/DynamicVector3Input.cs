@@ -59,4 +59,9 @@ public class DynamicVector3Input
 
         return new Vector3(xVal * n, yVal * n, zVal * n);
     }
+
+    public override string ToString()
+    {
+        return x + y + z;
+    }
 }

@@ -6,15 +6,38 @@ using UnityEditor;
 public class AdvancedDuplicator : EditorWindow
 {
 
+    struct DynamicTransform
+    {
+        public DynamicVector3Input position, rotation, scale;
+        public int count;
+
+        public DynamicTransform(DynamicVector3Input p, DynamicVector3Input r, DynamicVector3Input s, int c)
+        {
+            position = p;
+            rotation = r;
+            scale = s;
+            count = c;
+        }
+    }
+
     private GameObject selectedObject;
 
     private DynamicVector3Input objPosition;
     private DynamicVector3Input objRotation;
     private DynamicVector3Input objScale;
 
+    private int numberOfDupes = 0;
+
     private Transform transform;
 
-    private ArrayList duplicatedObjects;
+    private ArrayList previewObjects;
+
+    private string oldPositionString;
+    private string oldRotationString;
+    private string oldScaleString;
+    private int oldNumberOfDupes;
+
+    private Hashtable sceneObjectSettings;
 
     [MenuItem("Window/Utilities/AdvancedDuplicator")]
     public static void ShowWindow()
@@ -24,8 +47,28 @@ public class AdvancedDuplicator : EditorWindow
 
     private void OnSelectionChange()
     {
-        removeDuplicates();
+        removeDuplicatesPreview();
         SetItemValues();
+        if (this.selectedObject != null)
+        {
+            if (this.sceneObjectSettings.Contains(this.selectedObject))
+            {
+                DynamicTransform dynamicTransform = (DynamicTransform)this.sceneObjectSettings[this.selectedObject];
+                this.objPosition = dynamicTransform.position;
+                this.objRotation = dynamicTransform.rotation;
+                this.objScale = dynamicTransform.rotation;
+                this.numberOfDupes = dynamicTransform.count;
+
+                this.previewDuplicate();
+            }
+            else
+            {
+                initializeObjects();
+                this.numberOfDupes = 0;
+            }
+
+        }
+
         Repaint();
     }
 
@@ -48,65 +91,123 @@ public class AdvancedDuplicator : EditorWindow
         this.objScale.vectorSet = this.selectedObject.transform.localScale;
     }
 
-    private void duplicate(int amount)
+    // Generate the game objects for the preview
+    // TODO: make them transparent
+    private void previewDuplicate()
     {
-        removeDuplicates();
-        duplicatedObjects = new ArrayList();
-        
-        for (int i = 1; i <= amount; i++)
+        try
         {
-            Vector3 position = this.objPosition.getVector3OffsetAtPoint(i);
-            Vector3 rotation = this.objRotation.getVector3OffsetAtPoint(i);
-            Vector3 scale = this.objScale.getVector3OffsetAtPoint(i);
+            removeDuplicatesPreview();
+            previewObjects = new ArrayList();
 
-            GameObject newObj = Instantiate(this.selectedObject);
+            // Used for generating new previews
+            oldPositionString = this.objPosition.ToString();
+            oldRotationString = this.objRotation.ToString();
+            oldScaleString = this.objScale.ToString();
 
-            newObj.transform.position += position;
-            newObj.transform.eulerAngles += rotation;
-            newObj.transform.localScale += scale;
+            for (int i = 1; i <= numberOfDupes; i++)
+            {
+                Vector3 position = this.objPosition.getVector3OffsetAtPoint(i);
+                Vector3 rotation = this.objRotation.getVector3OffsetAtPoint(i);
+                Vector3 scale = this.objScale.getVector3OffsetAtPoint(i);
 
-            duplicatedObjects.Add(
-                newObj
-               );
+                GameObject newObj = Instantiate(this.selectedObject);
+
+                newObj.transform.position += position;
+                newObj.transform.eulerAngles += rotation;
+                newObj.transform.localScale += scale;
+
+                previewObjects.Add(newObj);
+            }
+        } catch (Exception e)
+        {
+            Debug.Log(e.ToString());
+            // Do something here.. maybe?
         }
     }
 
+    private void duplicate()
+    {
+        previewDuplicate();
+        previewObjects.Clear();
+    }
+
+    private bool hasChanged()
+    {
+        if (!this.objPosition.ToString().Equals(oldPositionString) ||
+            !this.objRotation.ToString().Equals(oldRotationString) ||
+            !this.objScale.ToString().Equals(oldScaleString) ||
+            this.numberOfDupes != this.oldNumberOfDupes)
+            return true;
+        else
+            return false;
+    }
+
+    private void OnEnable()
+    {
+        // Make sure to set HashTable
+        if (this.sceneObjectSettings == null)
+            this.sceneObjectSettings = new Hashtable();
+
+        // Set Dynamic Inputs
+        if (this.objPosition == null)
+            this.initializeObjects();
+    }
 
     private void OnGUI()
     {
+
         string objName = this.selectedObject == null || Selection.gameObjects.Length > 1 ? "No object selected" : this.selectedObject.name;
 
         GUILayout.Label("Duplicate Object: " + objName, EditorStyles.boldLabel);
         if (this.selectedObject == null || Selection.gameObjects.Length > 1)
             return;
+
+        // Check state of certain objects
         if (this.objPosition == null)
         {
-            initializeObjects();
             SetItemValues();
         }
 
+        if (hasChanged() || this.previewObjects == null)
+        {
+            if (this.selectedObject != null)
+            {
+                this.sceneObjectSettings[this.selectedObject] = new DynamicTransform(
+                    this.objPosition,
+                    this.objRotation,
+                    this.objScale,
+                    this.numberOfDupes);
+            }
+
+            previewDuplicate();
+        }
+
+        // Offsets
         GUILayout.Label("Offsets: ");
         this.objPosition.drawGUI();
         this.objRotation.drawGUI();
         this.objScale.drawGUI();
 
-        GUILayout.Label("Amount: ");
+        // Amount
+        Rect r = new Rect(0, 0, 100, 100);
+        numberOfDupes = EditorGUILayout.IntSlider("Amount: ", numberOfDupes, 0, 100);
 
+        // Duplicate Buttons
         if (GUILayout.Button("Duplicate"))
-            this.duplicate(4);
+            return; //this.duplicate(numberOfDupes);
     }
 
-    private void removeDuplicates()
+    private void removeDuplicatesPreview()
     {
-        if (this.duplicatedObjects == null || this.duplicatedObjects.Count == 0)
+        if (this.previewObjects == null || this.previewObjects.Count == 0)
             return;
-        Debug.Log("deleting");
-        
-        foreach (GameObject dupe in this.duplicatedObjects)
+
+        foreach (GameObject dupe in this.previewObjects)
         {
             DestroyImmediate(dupe);
         }
 
-        this.duplicatedObjects.Clear();
+        this.previewObjects.Clear();
     }
 }
