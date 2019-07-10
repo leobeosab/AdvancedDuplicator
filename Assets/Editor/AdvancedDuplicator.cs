@@ -27,6 +27,7 @@ public class AdvancedDuplicator : EditorWindow
     private DynamicVector3Input objScale;
 
     private int numberOfDupes = 0;
+    private string previewNameSuffix = "[~Preview~]";
 
     private Transform transform;
 
@@ -117,6 +118,8 @@ public class AdvancedDuplicator : EditorWindow
                 newObj.transform.eulerAngles += rotation;
                 newObj.transform.localScale += scale;
 
+                newObj.name += previewNameSuffix;
+
                 previewObjects.Add(newObj);
             }
         } catch (Exception e)
@@ -129,6 +132,10 @@ public class AdvancedDuplicator : EditorWindow
     private void duplicate()
     {
         previewDuplicate();
+        foreach (GameObject obj in this.previewObjects)
+        {
+            obj.name = obj.name.Replace(previewNameSuffix, "");
+        }
         previewObjects.Clear();
     }
 
@@ -160,7 +167,7 @@ public class AdvancedDuplicator : EditorWindow
         string objName = this.selectedObject == null || Selection.gameObjects.Length > 1 ? "No object selected" : this.selectedObject.name;
 
         GUILayout.Label("Duplicate Object: " + objName, EditorStyles.boldLabel);
-        if (this.selectedObject == null || Selection.gameObjects.Length > 1)
+        if (this.selectedObject == null || Selection.gameObjects.Length > 1 || this.numberOfDupes == 0)
             return;
 
         // Check state of certain objects
@@ -195,7 +202,7 @@ public class AdvancedDuplicator : EditorWindow
 
         // Duplicate Buttons
         if (GUILayout.Button("Duplicate"))
-            return; //this.duplicate(numberOfDupes);
+            this.duplicate();
     }
 
     private void removeDuplicatesPreview()
