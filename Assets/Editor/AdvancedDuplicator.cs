@@ -105,6 +105,7 @@ public class AdvancedDuplicator : EditorWindow
             oldPositionString = this.objPosition.ToString();
             oldRotationString = this.objRotation.ToString();
             oldScaleString = this.objScale.ToString();
+            oldNumberOfDupes = this.numberOfDupes;
 
             for (int i = 1; i <= numberOfDupes; i++)
             {
@@ -118,7 +119,7 @@ public class AdvancedDuplicator : EditorWindow
                 newObj.transform.eulerAngles += rotation;
                 newObj.transform.localScale += scale;
 
-                newObj.name += previewNameSuffix;
+                newObj.name = newObj.name.Replace("(Clone)", previewNameSuffix);
 
                 previewObjects.Add(newObj);
             }
@@ -131,10 +132,13 @@ public class AdvancedDuplicator : EditorWindow
 
     private void duplicate()
     {
+        int undoGroupIndex = Undo.GetCurrentGroup();
+
         previewDuplicate();
         foreach (GameObject obj in this.previewObjects)
         {
             obj.name = obj.name.Replace(previewNameSuffix, "");
+            Undo.RegisterCreatedObjectUndo(obj, "Duped "+ obj +" via AdvancedDuplicator!");
         }
         previewObjects.Clear();
     }
@@ -167,7 +171,7 @@ public class AdvancedDuplicator : EditorWindow
         string objName = this.selectedObject == null || Selection.gameObjects.Length > 1 ? "No object selected" : this.selectedObject.name;
 
         GUILayout.Label("Duplicate Object: " + objName, EditorStyles.boldLabel);
-        if (this.selectedObject == null || Selection.gameObjects.Length > 1 || this.numberOfDupes == 0)
+        if (this.selectedObject == null || Selection.gameObjects.Length > 1)
             return;
 
         // Check state of certain objects
