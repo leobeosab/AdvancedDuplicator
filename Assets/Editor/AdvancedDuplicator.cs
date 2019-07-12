@@ -27,7 +27,7 @@ public class AdvancedDuplicator : EditorWindow
     private DynamicVector3Input objScale;
 
     private int numberOfDupes = 0;
-    private string previewNameSuffix = "[~Preview~]";
+    private readonly string previewNameSuffix = "[~Preview~]";
 
     private Transform transform;
 
@@ -48,7 +48,7 @@ public class AdvancedDuplicator : EditorWindow
 
     private void OnSelectionChange()
     {
-        removeDuplicatesPreview();
+        RemoveDuplicatesPreview();
         SetItemValues();
         if (this.selectedObject != null)
         {
@@ -60,11 +60,11 @@ public class AdvancedDuplicator : EditorWindow
                 this.objScale = dynamicTransform.rotation;
                 this.numberOfDupes = dynamicTransform.count;
 
-                this.previewDuplicate();
+                this.PreviewDuplicate();
             }
             else
             {
-                initializeObjects();
+                InitializeObjects();
                 this.numberOfDupes = 0;
             }
 
@@ -78,7 +78,7 @@ public class AdvancedDuplicator : EditorWindow
         this.selectedObject = Selection.activeGameObject;
     }
 
-    private void initializeObjects()
+    private void InitializeObjects()
     {
         this.objPosition = new DynamicVector3Input("Position");
         this.objRotation = new DynamicVector3Input("Rotation");
@@ -94,11 +94,11 @@ public class AdvancedDuplicator : EditorWindow
 
     // Generate the game objects for the preview
     // TODO: make them transparent
-    private void previewDuplicate()
+    private void PreviewDuplicate()
     {
         try
         {
-            removeDuplicatesPreview();
+            RemoveDuplicatesPreview();
             previewObjects = new ArrayList();
 
             // Used for generating new previews
@@ -119,31 +119,30 @@ public class AdvancedDuplicator : EditorWindow
                 newObj.transform.eulerAngles += rotation;
                 newObj.transform.localScale += scale;
 
-                newObj.name = newObj.name.Replace("(Clone)", previewNameSuffix);
+                newObj.name = previewNameSuffix;
 
                 previewObjects.Add(newObj);
             }
         } catch (Exception e)
         {
-            Debug.Log(e.ToString());
-            // Do something here.. maybe?
+            return;
         }
     }
 
-    private void duplicate()
+    private void Duplicate()
     {
         int undoGroupIndex = Undo.GetCurrentGroup();
 
-        previewDuplicate();
+        PreviewDuplicate();
         foreach (GameObject obj in this.previewObjects)
         {
-            obj.name = obj.name.Replace(previewNameSuffix, "");
+            obj.name = obj.name.Replace(previewNameSuffix, this.selectedObject.name);
             Undo.RegisterCreatedObjectUndo(obj, "Duped "+ obj +" via AdvancedDuplicator!");
         }
         previewObjects.Clear();
     }
 
-    private bool hasChanged()
+    private bool HasChanged()
     {
         if (!this.objPosition.ToString().Equals(oldPositionString) ||
             !this.objRotation.ToString().Equals(oldRotationString) ||
@@ -162,7 +161,7 @@ public class AdvancedDuplicator : EditorWindow
 
         // Set Dynamic Inputs
         if (this.objPosition == null)
-            this.initializeObjects();
+            this.InitializeObjects();
     }
 
     private void OnGUI()
@@ -180,7 +179,7 @@ public class AdvancedDuplicator : EditorWindow
             SetItemValues();
         }
 
-        if (hasChanged() || this.previewObjects == null)
+        if (HasChanged() || this.previewObjects == null)
         {
             if (this.selectedObject != null)
             {
@@ -191,7 +190,7 @@ public class AdvancedDuplicator : EditorWindow
                     this.numberOfDupes);
             }
 
-            previewDuplicate();
+            PreviewDuplicate();
         }
 
         // Offsets
@@ -206,17 +205,19 @@ public class AdvancedDuplicator : EditorWindow
 
         // Duplicate Buttons
         if (GUILayout.Button("Duplicate"))
-            this.duplicate();
+            this.Duplicate();
     }
 
-    private void removeDuplicatesPreview()
+    private void RemoveDuplicatesPreview()
     {
         if (this.previewObjects == null || this.previewObjects.Count == 0)
             return;
 
-        foreach (GameObject dupe in this.previewObjects)
+        GameObject tmpObj = GameObject.Find(previewNameSuffix);
+        while(tmpObj != null)
         {
-            DestroyImmediate(dupe);
+            DestroyImmediate(tmpObj);
+            tmpObj = GameObject.Find(previewNameSuffix);
         }
 
         this.previewObjects.Clear();

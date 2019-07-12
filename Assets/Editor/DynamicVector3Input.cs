@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEditor;
 using System.Collections;
+using System.Data;
 
 public class DynamicVector3Input
 {
@@ -53,9 +54,15 @@ public class DynamicVector3Input
 
     public Vector3 getVector3OffsetAtPoint(int n)
     {
-        float xVal = float.Parse(this.x);
-        float yVal = float.Parse(this.y);
-        float zVal = float.Parse(this.z);
+        DataTable dt = new DataTable();
+
+        string xString = InsertValues(this.x, n, 0, 0);
+        string yString = InsertValues(this.y, n, 0, 0);
+        string zString = InsertValues(this.z, n, 0, 0);
+
+        float xVal = Evaluate(xString);
+        float yVal = Evaluate(yString);
+        float zVal = Evaluate(zString);
 
         return new Vector3(xVal * n, yVal * n, zVal * n);
     }
@@ -63,5 +70,23 @@ public class DynamicVector3Input
     public override string ToString()
     {
         return x + y + z;
+    }
+
+    private string InsertValues(string input, int n, float width, float height)
+    {
+        string output = input.Replace("n", n.ToString());
+        output = output.Replace("w", width.ToString());
+        output = output.Replace("h", height.ToString());
+
+        return output;
+    }
+
+    private float Evaluate(string expression)
+    {
+        var loDataTable = new DataTable();
+        var loDataColumn = new DataColumn("Eval", typeof(double), expression);
+        loDataTable.Columns.Add(loDataColumn);
+        loDataTable.Rows.Add(0);
+        return (float)(double)(loDataTable.Rows[0]["Eval"]);
     }
 }
