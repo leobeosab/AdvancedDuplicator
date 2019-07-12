@@ -40,7 +40,7 @@ public class AdvancedDuplicator : EditorWindow
 
     private Hashtable sceneObjectSettings;
 
-    [MenuItem("Window/Utilities/AdvancedDuplicator")]
+    [MenuItem("Window/Utilities/Advanced Duplicator")]
     public static void ShowWindow()
     {
         EditorWindow.GetWindow(typeof(AdvancedDuplicator));
@@ -67,7 +67,6 @@ public class AdvancedDuplicator : EditorWindow
                 InitializeObjects();
                 this.numberOfDupes = 0;
             }
-
         }
 
         Repaint();
@@ -132,14 +131,16 @@ public class AdvancedDuplicator : EditorWindow
     private void Duplicate()
     {
         int undoGroupIndex = Undo.GetCurrentGroup();
-
         PreviewDuplicate();
+
         foreach (GameObject obj in this.previewObjects)
         {
             obj.name = obj.name.Replace(previewNameSuffix, this.selectedObject.name);
             Undo.RegisterCreatedObjectUndo(obj, "Duped "+ obj +" via AdvancedDuplicator!");
         }
+
         previewObjects.Clear();
+        this.numberOfDupes = 0;
     }
 
     private bool HasChanged()
@@ -193,19 +194,47 @@ public class AdvancedDuplicator : EditorWindow
             PreviewDuplicate();
         }
 
+        GUILayout.BeginVertical();
+        GUILayout.Space(10);
+
         // Offsets
         GUILayout.Label("Offsets: ");
         this.objPosition.drawGUI();
         this.objRotation.drawGUI();
         this.objScale.drawGUI();
 
+        GUILayout.Space(20);
+
         // Amount
         Rect r = new Rect(0, 0, 100, 100);
         numberOfDupes = EditorGUILayout.IntSlider("Amount: ", numberOfDupes, 0, 100);
 
+        GUIStyle style = EditorStyles.miniButton;
+        style.padding = new RectOffset(25, 25, 5, 5);
+        style.fontSize = 12;
+        
+        style.alignment = TextAnchor.MiddleCenter;
+
+        GUILayout.BeginHorizontal();
+        GUILayout.FlexibleSpace();
+
         // Duplicate Buttons
-        if (GUILayout.Button("Duplicate"))
+        if (GUILayout.Button("Reset", style, GUILayout.Height(30)))
+        {
+            this.InitializeObjects();
+            this.numberOfDupes = 0;
+        }
+        // Duplicate Buttons
+        if (GUILayout.Button("Duplicate", style, GUILayout.Height(30)))
+        {
             this.Duplicate();
+        }
+
+        GUILayout.FlexibleSpace();
+        GUILayout.EndHorizontal();
+
+        GUILayout.Space(10);
+        GUILayout.EndVertical();
     }
 
     private void RemoveDuplicatesPreview()
