@@ -20,13 +20,22 @@ public class AdvancedDuplicator : EditorWindow
         }
     }
 
+    private enum DUPE_TYPE {
+        LINEAR,
+        RECT,
+        CUBE
+    }
+
+    private DUPE_TYPE type = DUPE_TYPE.LINEAR;
+
     private GameObject selectedObject;
 
     private DynamicVector3Input objPosition;
     private DynamicVector3Input objRotation;
     private DynamicVector3Input objScale;
 
-    private int numberOfDupes = 0;
+    private int width = 0, length = 0, height = 0, numberOfDupes = 0;
+
     private readonly string previewNameSuffix = "[~Preview~]";
 
     private Transform transform;
@@ -36,7 +45,7 @@ public class AdvancedDuplicator : EditorWindow
     private string oldPositionString;
     private string oldRotationString;
     private string oldScaleString;
-    private int oldNumberOfDupes;
+    private int oldWidth, oldLength, oldHeight, oldNumberOfDupes;
 
     private Hashtable sceneObjectSettings;
 
@@ -104,24 +113,96 @@ public class AdvancedDuplicator : EditorWindow
             oldPositionString = this.objPosition.ToString();
             oldRotationString = this.objRotation.ToString();
             oldScaleString = this.objScale.ToString();
+            oldWidth = this.width;
+            oldHeight = this.height;
+            oldLength = this.length;
             oldNumberOfDupes = this.numberOfDupes;
 
-            for (int i = 1; i <= numberOfDupes; i++)
+            Vector3 objSize = this.selectedObject.GetComponent<MeshFilter>().sharedMesh.bounds.size;
+            float objectWidth = objSize.x;
+            float objectLength = objSize.z;
+            float objectHeight = objSize.y;
+
+            // There is a shit ton of repeated code in this
+            // TODO: Refactor this POS
+            switch (this.type)
             {
-                Vector3 position = this.objPosition.getVector3OffsetAtPoint(i);
-                Vector3 rotation = this.objRotation.getVector3OffsetAtPoint(i);
-                Vector3 scale = this.objScale.getVector3OffsetAtPoint(i);
+                case DUPE_TYPE.LINEAR:
 
-                GameObject newObj = Instantiate(this.selectedObject);
+                    for (int i = 1; i <= numberOfDupes; i++)
+                    {
+                        Vector3 position = this.objPosition.getVector3OffsetAtPoint(i);
+                        Vector3 rotation = this.objRotation.getVector3OffsetAtPoint(i);
+                        Vector3 scale = this.objScale.getVector3OffsetAtPoint(i);
 
-                newObj.transform.position += position;
-                newObj.transform.eulerAngles += rotation;
-                newObj.transform.localScale += scale;
+                        GameObject newObj = Instantiate(this.selectedObject);
 
-                newObj.name = previewNameSuffix;
+                        newObj.transform.position += position;
+                        newObj.transform.eulerAngles += rotation;
+                        newObj.transform.localScale += scale;
 
-                previewObjects.Add(newObj);
+                        newObj.name = previewNameSuffix;
+
+                        previewObjects.Add(newObj);
+                    }
+                    break;
+                case DUPE_TYPE.RECT:
+                    for (int l = 0; l < this.length; l++)
+                    {
+                        for (int w = 0; w < this.width; w++)
+                        {
+                            if (l == 0 && w == 0)
+                                continue;
+
+                            Vector3 position = this.objPosition.getVector3OffsetAtPoint(l);
+                            Vector3 rotation = this.objRotation.getVector3OffsetAtPoint(l);
+                            Vector3 scale = this.objScale.getVector3OffsetAtPoint(l);
+
+                            position += new Vector3(w * objectWidth, 0, l * objectLength);
+
+                            GameObject newObj = Instantiate(this.selectedObject);
+
+                            newObj.transform.position += position;
+                            newObj.transform.eulerAngles += rotation;
+                            newObj.transform.localScale += scale;
+
+                            newObj.name = previewNameSuffix;
+
+                            previewObjects.Add(newObj);
+                        }
+                    }
+                    break;
+                case DUPE_TYPE.CUBE:
+                    for (int h = 0; h < this.height; h++)
+                    {
+                        for (int l = 0; l < this.length; l++)
+                        {
+                            for (int w = 0; w < this.width; w++)
+                            {
+                                if (h == 0 && l == 0 && w == 0)
+                                    continue;
+
+                                Vector3 position = this.objPosition.getVector3OffsetAtPoint(l);
+                                Vector3 rotation = this.objRotation.getVector3OffsetAtPoint(l);
+                                Vector3 scale = this.objScale.getVector3OffsetAtPoint(l);
+
+                                position += new Vector3(w * objectWidth, h * objectHeight, l * objectLength);
+
+                                GameObject newObj = Instantiate(this.selectedObject);
+
+                                newObj.transform.position += position;
+                                newObj.transform.eulerAngles += rotation;
+                                newObj.transform.localScale += scale;
+
+                                newObj.name = previewNameSuffix;
+
+                                previewObjects.Add(newObj);
+                            }
+                        }
+                    }
+                    break;
             }
+
         } catch (Exception e)
         {
             return;
@@ -148,7 +229,10 @@ public class AdvancedDuplicator : EditorWindow
         if (!this.objPosition.ToString().Equals(oldPositionString) ||
             !this.objRotation.ToString().Equals(oldRotationString) ||
             !this.objScale.ToString().Equals(oldScaleString) ||
-            this.numberOfDupes != this.oldNumberOfDupes)
+            this.numberOfDupes != this.oldNumberOfDupes ||
+            this.width != this.oldWidth ||
+            this.length != this.oldLength ||
+            this.height != this.oldHeight)
             return true;
         else
             return false;
@@ -194,7 +278,38 @@ public class AdvancedDuplicator : EditorWindow
             PreviewDuplicate();
         }
 
-        GUILayout.BeginVertical();
+        // Styles
+        GUIStyle buttonStyle = EditorStyles.miniButton;
+        buttonStyle.padding = new RectOffset(25, 25, 5, 5);
+        buttonStyle.fontSize = 12;
+        buttonStyle.alignment = TextAnchor.MiddleCenter;
+
+        GUIStyle verticalStyle = new GUIStyle();
+        verticalStyle.padding = new RectOffset(10, 10, 5, 5);
+
+        // Start GUI
+        GUILayout.BeginVertical(verticalStyle);
+        GUILayout.Space(10);
+
+        // Duplication Button Types
+        GUILayout.BeginHorizontal();
+        GUILayout.Space(10);
+
+        if (GUILayout.Button("Linear", buttonStyle, GUILayout.Height(30)))
+            this.type = DUPE_TYPE.LINEAR;
+        if (GUILayout.Button("Rect", buttonStyle, GUILayout.Height(30)))
+            this.type = DUPE_TYPE.RECT;
+        if (GUILayout.Button("Cube", buttonStyle, GUILayout.Height(30)))
+            this.type = DUPE_TYPE.CUBE;
+
+        GUILayout.Space(10);
+        GUILayout.EndHorizontal();
+        // End
+
+        GUILayout.Space(10);
+
+        this.DrawTypeSpecificInputs();
+
         GUILayout.Space(10);
 
         // Offsets
@@ -202,39 +317,71 @@ public class AdvancedDuplicator : EditorWindow
         this.objPosition.drawGUI();
         this.objRotation.drawGUI();
         this.objScale.drawGUI();
+        // End
 
         GUILayout.Space(20);
 
-        // Amount
-        Rect r = new Rect(0, 0, 100, 100);
-        numberOfDupes = EditorGUILayout.IntSlider("Amount: ", numberOfDupes, 0, 100);
-
-        GUIStyle style = EditorStyles.miniButton;
-        style.padding = new RectOffset(25, 25, 5, 5);
-        style.fontSize = 12;
-        
-        style.alignment = TextAnchor.MiddleCenter;
+        // End
 
         GUILayout.BeginHorizontal();
         GUILayout.FlexibleSpace();
 
-        // Duplicate Buttons
-        if (GUILayout.Button("Reset", style, GUILayout.Height(30)))
+        // Duplicate / Reset buttons
+        if (GUILayout.Button("Reset", buttonStyle, GUILayout.Height(30)))
         {
             this.InitializeObjects();
+            this.width = 0;
+            this.height = 0;
+            this.length = 0;
             this.numberOfDupes = 0;
         }
-        // Duplicate Buttons
-        if (GUILayout.Button("Duplicate", style, GUILayout.Height(30)))
+        if (GUILayout.Button("Duplicate", buttonStyle, GUILayout.Height(30)))
         {
             this.Duplicate();
         }
+        // End
 
         GUILayout.FlexibleSpace();
         GUILayout.EndHorizontal();
 
         GUILayout.Space(10);
         GUILayout.EndVertical();
+        // End GUI
+    }
+
+    private void DrawTypeSpecificInputs()
+    {
+        switch (this.type)
+        {
+            case DUPE_TYPE.LINEAR:
+                // Amount
+                Rect r = new Rect(0, 0, 100, 100);
+                numberOfDupes = EditorGUILayout.IntSlider("Duplicate Amount: ", numberOfDupes, 0, 100);
+                break;
+            case DUPE_TYPE.RECT:
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("Duplication Size");
+                GUILayout.FlexibleSpace();
+                GUILayout.Label("Width");
+                this.width = EditorGUILayout.IntField(width);
+                GUILayout.Label("Length");
+                this.length = EditorGUILayout.IntField(length);
+                GUILayout.EndHorizontal();
+                break;
+            case DUPE_TYPE.CUBE:
+                GUILayout.BeginHorizontal();
+                GUILayout.FlexibleSpace();
+                GUILayout.Label("Width");
+                this.width = EditorGUILayout.IntField(width);
+                GUILayout.Label("Length");
+                this.length = EditorGUILayout.IntField(length);
+                GUILayout.Label("Height");
+                this.height = EditorGUILayout.IntField(height);
+                GUILayout.FlexibleSpace();
+                GUILayout.EndHorizontal();
+                break;
+
+        }
     }
 
     private void RemoveDuplicatesPreview()
