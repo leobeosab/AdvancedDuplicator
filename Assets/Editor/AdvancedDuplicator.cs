@@ -135,7 +135,7 @@ public class AdvancedDuplicator : EditorWindow
                         Vector3 rotation = this.objRotation.getVector3OffsetAtPoint(i);
                         Vector3 scale = this.objScale.getVector3OffsetAtPoint(i);
 
-                        GameObject newObj = Instantiate(this.selectedObject);
+                        GameObject newObj = Instantiate(this.selectedObject, this.selectedObject.transform.parent);
 
                         newObj.transform.position += position;
                         newObj.transform.eulerAngles += rotation;
@@ -160,7 +160,7 @@ public class AdvancedDuplicator : EditorWindow
 
                             position += new Vector3(w * objectWidth, 0, l * objectLength);
 
-                            GameObject newObj = Instantiate(this.selectedObject);
+                            GameObject newObj = Instantiate(this.selectedObject, this.selectedObject.transform.parent);
 
                             newObj.transform.position += position;
                             newObj.transform.eulerAngles += rotation;
