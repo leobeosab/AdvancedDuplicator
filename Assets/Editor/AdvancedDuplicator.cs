@@ -33,6 +33,7 @@ public class AdvancedDuplicator : EditorWindow
     private DUPE_TYPE oldType = 0;
 
     private GameObject selectedObject;
+    private Transform oldTransform;
 
     private DynamicVector3Input objPosition;
     private DynamicVector3Input objRotation;
@@ -57,6 +58,12 @@ public class AdvancedDuplicator : EditorWindow
     public static void ShowWindow()
     {
         EditorWindow.GetWindow(typeof(AdvancedDuplicator));
+    }
+
+    private void OnInspectorUpdate()
+    {
+        if (this.selectedObject != null && this.selectedObject.transform.hasChanged)
+            PreviewDuplicate();
     }
 
     private void OnSelectionChange()
@@ -84,7 +91,7 @@ public class AdvancedDuplicator : EditorWindow
 
         Repaint();
     }
-
+     
     private void SetItemValues()
     {
         this.selectedObject = Selection.activeGameObject;
@@ -115,6 +122,7 @@ public class AdvancedDuplicator : EditorWindow
         {
             RemoveDuplicatesPreview();
             previewObjects = new ArrayList();
+            this.oldTransform = this.selectedObject.transform;
 
             // Used for generating new previews
             oldPositionString = this.objPosition.ToString();
@@ -201,7 +209,7 @@ public class AdvancedDuplicator : EditorWindow
 
                                 position += new Vector3(w * this.objPosition.width, h * this.objPosition.height, l * this.objPosition.length);
 
-                                GameObject newObj = Instantiate(this.selectedObject);
+                                GameObject newObj = Instantiate(this.selectedObject, this.selectedObject.transform.parent);
 
                                 newObj.transform.position += position;
                                 newObj.transform.eulerAngles += rotation;
@@ -247,7 +255,8 @@ public class AdvancedDuplicator : EditorWindow
             this.width != this.oldWidth ||
             this.length != this.oldLength ||
             this.height != this.oldHeight ||
-            this.oldType != this.type)
+            this.oldType != this.type ||
+            this.oldTransform != Selection.activeTransform)
             return true;
         else
             return false;
@@ -278,9 +287,10 @@ public class AdvancedDuplicator : EditorWindow
         {
             SetItemValues();
         }
-
+       
         if (HasChanged() || this.previewObjects == null)
         {
+            this.selectedObject.transform.hasChanged = false;
             if (this.selectedObject != null)
             {
                 this.sceneObjectSettings[this.selectedObject] = new DynamicTransform(
@@ -340,15 +350,12 @@ public class AdvancedDuplicator : EditorWindow
         // Duplicate / Reset buttons
         if (GUILayout.Button("Reset", buttonStyle, GUILayout.Height(30)))
         {
-            this.InitializeObjects();
-            this.width = 0;
-            this.height = 0;
-            this.length = 0;
-            this.numberOfDupes = 0;
+            this.Reset();
         }
         if (GUILayout.Button("Duplicate", buttonStyle, GUILayout.Height(30)))
         {
             this.Duplicate();
+            this.Reset();
         }
         // End
 
@@ -358,6 +365,15 @@ public class AdvancedDuplicator : EditorWindow
         GUILayout.Space(10);
         GUILayout.EndVertical();
         // End GUI
+    }
+
+    private void Reset()
+    {
+        this.InitializeObjects();
+        this.width = 0;
+        this.height = 0;
+        this.length = 0;
+        this.numberOfDupes = 0;
     }
 
     private void DrawTypeSpecificInputs()
