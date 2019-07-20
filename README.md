@@ -32,7 +32,7 @@ Offset variables:
 
 W: width of object
 
-oH: height of object
+H: height of object
 
 
 ### Cube Duplication

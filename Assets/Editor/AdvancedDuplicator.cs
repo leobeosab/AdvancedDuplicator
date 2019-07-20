@@ -12,14 +12,17 @@ public class AdvancedDuplicator : EditorWindow
     struct DynamicTransform
     {
         public DynamicVector3Input position, rotation, scale;
-        public int count;
+        public int count, width, height, length;
 
-        public DynamicTransform(DynamicVector3Input p, DynamicVector3Input r, DynamicVector3Input s, int c)
+        public DynamicTransform(DynamicVector3Input p, DynamicVector3Input r, DynamicVector3Input s, int c, int w, int h, int l)
         {
             position = p;
             rotation = r;
             scale = s;
             count = c;
+            width = w;
+            height = h;
+            length = l;
         }
     }
 
@@ -79,7 +82,9 @@ public class AdvancedDuplicator : EditorWindow
                 this.objRotation = dynamicTransform.rotation;
                 this.objScale = dynamicTransform.rotation;
                 this.numberOfDupes = dynamicTransform.count;
-
+                this.width = dynamicTransform.width;
+                this.height = dynamicTransform.height;
+                this.length = dynamicTransform.length;
                 this.PreviewDuplicate();
             }
             else
@@ -102,6 +107,10 @@ public class AdvancedDuplicator : EditorWindow
         this.objPosition = new DynamicVector3Input("Position", this.selectedObject);
         this.objRotation = new DynamicVector3Input("Rotation", this.selectedObject);
         this.objScale = new DynamicVector3Input("Scale", this.selectedObject);
+
+        this.width = 0;
+        this.length = 0;
+        this.height = 0;
     }
 
     private void SetValuesWithActiveObject()
@@ -297,7 +306,10 @@ public class AdvancedDuplicator : EditorWindow
                     this.objPosition,
                     this.objRotation,
                     this.objScale,
-                    this.numberOfDupes);
+                    this.numberOfDupes,
+                    this.width,
+                    this.height,
+                    this.length);
             }
 
             PreviewDuplicate();
