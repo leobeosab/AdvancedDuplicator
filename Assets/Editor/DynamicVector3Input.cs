@@ -2,6 +2,7 @@
 using UnityEditor;
 using System.Collections;
 using System.Data;
+using System;
 
 public class DynamicVector3Input
 {
@@ -11,6 +12,10 @@ public class DynamicVector3Input
     private string x;
     private string y;
     private string z;
+
+    public float width;
+    public float height;
+    public float length;
 
     public Vector3 vectorSet 
     {
@@ -23,13 +28,27 @@ public class DynamicVector3Input
     }
 
  
-    public DynamicVector3Input(string name)
+    public DynamicVector3Input(string name, GameObject obj)
     {
         this.name = name;
 
         this.x = "0";
         this.y = "0";
         this.z = "0";
+
+        // Fails if game object doesn't have a mesh renderer
+        try
+        {
+            Vector3 objSize = obj.GetComponent<MeshFilter>().sharedMesh.bounds.size;
+            Vector3 objScale = obj.transform.localScale;
+
+            this.width = objSize.x * objScale.x;
+            this.length = objSize.z * objScale.z;
+            this.height = objSize.y * objScale.y;
+        } catch (Exception)
+        {
+            this.width = this.length = this.height = 0;
+        }
     }
 
     public Rect drawGUI()
@@ -56,9 +75,9 @@ public class DynamicVector3Input
     {
         DataTable dt = new DataTable();
 
-        string xString = InsertValues(this.x, n, 0, 0);
-        string yString = InsertValues(this.y, n, 0, 0);
-        string zString = InsertValues(this.z, n, 0, 0);
+        string xString = InsertValues(this.x, n);
+        string yString = InsertValues(this.y, n);
+        string zString = InsertValues(this.z, n);
 
         float xVal = Evaluate(xString);
         float yVal = Evaluate(yString);
@@ -72,8 +91,10 @@ public class DynamicVector3Input
         return x + y + z;
     }
 
-    private string InsertValues(string input, int n, float width, float height)
+    private string InsertValues(string input, int n)
     {
+        input = input.ToLower();
+
         string output = input.Replace("n", n.ToString());
         output = output.Replace("w", width.ToString());
         output = output.Replace("h", height.ToString());

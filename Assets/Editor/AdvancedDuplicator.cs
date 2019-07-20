@@ -30,6 +30,7 @@ public class AdvancedDuplicator : EditorWindow
     }
 
     private DUPE_TYPE type = DUPE_TYPE.LINEAR;
+    private DUPE_TYPE oldType = 0;
 
     private GameObject selectedObject;
 
@@ -155,9 +156,13 @@ public class AdvancedDuplicator : EditorWindow
                             if (l == 0 && w == 0)
                                 continue;
 
+                            // This is really bad TODO fix asap
                             Vector3 position = this.objPosition.getVector3OffsetAtPoint(l);
+                            Vector3 xPos = this.objPosition.getVector3OffsetAtPoint(w);
                             Vector3 rotation = this.objRotation.getVector3OffsetAtPoint(l);
                             Vector3 scale = this.objScale.getVector3OffsetAtPoint(l);
+
+                            position.x = xPos.x;
 
                             position += new Vector3(w * this.objPosition.width, 0, l * this.objPosition.length);
 
@@ -183,7 +188,14 @@ public class AdvancedDuplicator : EditorWindow
                                 if (h == 0 && l == 0 && w == 0)
                                     continue;
 
+                                // Also really bad TODO fix asap
                                 Vector3 position = this.objPosition.getVector3OffsetAtPoint(l);
+                                Vector3 xPos = this.objPosition.getVector3OffsetAtPoint(w);
+                                Vector3 yPos = this.objPosition.getVector3OffsetAtPoint(h);
+
+                                position.x = xPos.x;
+                                position.y = yPos.y;
+
                                 Vector3 rotation = this.objRotation.getVector3OffsetAtPoint(l);
                                 Vector3 scale = this.objScale.getVector3OffsetAtPoint(l);
 
@@ -234,7 +246,8 @@ public class AdvancedDuplicator : EditorWindow
             this.numberOfDupes != this.oldNumberOfDupes ||
             this.width != this.oldWidth ||
             this.length != this.oldLength ||
-            this.height != this.oldHeight)
+            this.height != this.oldHeight ||
+            this.oldType != this.type)
             return true;
         else
             return false;
@@ -296,8 +309,9 @@ public class AdvancedDuplicator : EditorWindow
         // Duplication Button Types
         GUILayout.BeginHorizontal();
         GUILayout.Space(10);
-
-        this.type = (DUPE_TYPE) GUILayout.Toolbar((int) this.type, new String[] { "Linear", "Rect", "Cube" }, buttonStyle);
+        
+        this.oldType = this.type;
+        this.type = (DUPE_TYPE) GUILayout.Toolbar((int) this.type, new String[] { "Linear", "Rect", "Cube" }, GUILayout.Height(30));
 
         GUILayout.Space(10);
         GUILayout.EndHorizontal();
