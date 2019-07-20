@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Suppress over cautious warning
+#pragma warning disable RECS0117 // Local variable has the same name as a member and hides it
+
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEditor;
@@ -88,9 +91,9 @@ public class AdvancedDuplicator : EditorWindow
 
     private void InitializeObjects()
     {
-        this.objPosition = new DynamicVector3Input("Position");
-        this.objRotation = new DynamicVector3Input("Rotation");
-        this.objScale = new DynamicVector3Input("Scale");
+        this.objPosition = new DynamicVector3Input("Position", this.selectedObject);
+        this.objRotation = new DynamicVector3Input("Rotation", this.selectedObject);
+        this.objScale = new DynamicVector3Input("Scale", this.selectedObject);
     }
 
     private void SetValuesWithActiveObject()
@@ -98,6 +101,9 @@ public class AdvancedDuplicator : EditorWindow
         this.objPosition.vectorSet = this.selectedObject.transform.position;
         this.objRotation.vectorSet = this.selectedObject.transform.rotation.eulerAngles;
         this.objScale.vectorSet = this.selectedObject.transform.localScale;
+
+        Vector3 objSize = this.selectedObject.GetComponent<MeshFilter>().sharedMesh.bounds.size;
+
     }
 
     // Generate the game objects for the preview
@@ -203,7 +209,8 @@ public class AdvancedDuplicator : EditorWindow
                     break;
             }
 
-        } catch (Exception e)
+        }
+        catch (Exception)
         {
             return;
         }
