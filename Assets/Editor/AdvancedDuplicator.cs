@@ -124,11 +124,6 @@ public class AdvancedDuplicator : EditorWindow
             oldLength = this.length;
             oldNumberOfDupes = this.numberOfDupes;
 
-            Vector3 objSize = this.selectedObject.GetComponent<MeshFilter>().sharedMesh.bounds.size;
-            float objectWidth = objSize.x;
-            float objectLength = objSize.z;
-            float objectHeight = objSize.y;
-
             // There is a shit ton of repeated code in this
             // TODO: Refactor this POS
             switch (this.type)
@@ -164,7 +159,7 @@ public class AdvancedDuplicator : EditorWindow
                             Vector3 rotation = this.objRotation.getVector3OffsetAtPoint(l);
                             Vector3 scale = this.objScale.getVector3OffsetAtPoint(l);
 
-                            position += new Vector3(w * objectWidth, 0, l * objectLength);
+                            position += new Vector3(w * this.objPosition.width, 0, l * this.objPosition.length);
 
                             GameObject newObj = Instantiate(this.selectedObject, this.selectedObject.transform.parent);
 
@@ -192,7 +187,7 @@ public class AdvancedDuplicator : EditorWindow
                                 Vector3 rotation = this.objRotation.getVector3OffsetAtPoint(l);
                                 Vector3 scale = this.objScale.getVector3OffsetAtPoint(l);
 
-                                position += new Vector3(w * objectWidth, h * objectHeight, l * objectLength);
+                                position += new Vector3(w * this.objPosition.width, h * this.objPosition.height, l * this.objPosition.length);
 
                                 GameObject newObj = Instantiate(this.selectedObject);
 
@@ -302,12 +297,7 @@ public class AdvancedDuplicator : EditorWindow
         GUILayout.BeginHorizontal();
         GUILayout.Space(10);
 
-        if (GUILayout.Button("Linear", buttonStyle, GUILayout.Height(30)))
-            this.type = DUPE_TYPE.LINEAR;
-        if (GUILayout.Button("Rect", buttonStyle, GUILayout.Height(30)))
-            this.type = DUPE_TYPE.RECT;
-        if (GUILayout.Button("Cube", buttonStyle, GUILayout.Height(30)))
-            this.type = DUPE_TYPE.CUBE;
+        this.type = (DUPE_TYPE) GUILayout.Toolbar((int) this.type, new String[] { "Linear", "Rect", "Cube" }, buttonStyle);
 
         GUILayout.Space(10);
         GUILayout.EndHorizontal();
