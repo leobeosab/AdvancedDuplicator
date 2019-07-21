@@ -1,14 +1,16 @@
 # Unity Advanced Duplicator
 
-Easy to use duplicator for any type of game object within Unity, allows for adding offsets using formulas such as (w - n * 3) which would just be the width of the object - the current duplicate number * 3
+Easy to use duplicator for any type of game object within Unity, allows for adding offsets using formulas such as (w - n \* 3) which would just be the width of the object - the current duplicate number \* 3
 
 ## Features
 
 ### Linear Duplication
+
 Basically just duplication on 1 axis </br>
 Duplicate Amount: Number of dupes.. duh?
 
 Offset variables:
+
 | Var Name | Description |
 | -------- | ----------- |
 | N | Current dupe index |
@@ -18,19 +20,23 @@ Offset variables:
 ![Linear Preview](linearexample_preview.png) ![Linear Values](linearexample_values.png)
 
 ### Rect Duplication
+
 Duplication on X and Z
 
 Width: # of dupes on X axis </br>
 Length: # of dupes on Z axis
 
 Offset variables:
+
 | Var Name | Description |
 | -------- | ----------- |
 | W | Width of object |
 | H | Height of object |
 
 ![Rect Preview](rectexample_preview.png) ![Rect Values](rectexample_values.png)
+
 ### Cube Duplication
+
 Duplication on... you guessed it, X, Y and Z
 
 Width: # of dupes on X axis </br>
@@ -38,6 +44,7 @@ Length: # of dupes on Z axis </br>
 Height: # of dupes on Y axis
 
 Offset variables:
+
 | Var Name | Description |
 | -------- | ----------- |
 | W | Width of object |
