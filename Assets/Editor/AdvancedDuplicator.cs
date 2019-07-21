@@ -80,7 +80,7 @@ public class AdvancedDuplicator : EditorWindow
                 DynamicTransform dynamicTransform = (DynamicTransform)this.sceneObjectSettings[this.selectedObject];
                 this.objPosition = dynamicTransform.position;
                 this.objRotation = dynamicTransform.rotation;
-                this.objScale = dynamicTransform.rotation;
+                this.objScale = dynamicTransform.scale;
                 this.numberOfDupes = dynamicTransform.count;
                 this.width = dynamicTransform.width;
                 this.height = dynamicTransform.height;
@@ -252,7 +252,7 @@ public class AdvancedDuplicator : EditorWindow
         }
 
         previewObjects.Clear();
-        this.numberOfDupes = 0;
+        InitializeObjects();
     }
 
     private bool HasChanged()

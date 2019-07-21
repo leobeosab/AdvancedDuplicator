@@ -5,52 +5,45 @@ Easy to use duplicator for any type of game object within Unity, allows for addi
 ## Features
 
 ### Linear Duplication
-Basically just duplication on 1 axis
-
+Basically just duplication on 1 axis </br>
 Duplicate Amount: Number of dupes.. duh?
 
 Offset variables:
+| Var Name | Description |
+| -------- | ----------- |
+| N | Current dupe index |
+| W | Width of object |
+| H | Height of object |
 
-N: current number of dupes
-
-example if you had just had n for the x offset the first dupe would have 1 added to it's x transform, the second would have 2, etc, etc.
-
-W: width of object
-
-H: Heighht of object
-
+![Linear Preview](linearexample_preview.png) ![Linear Values](linearexample_values.png)
 
 ### Rect Duplication
-
 Duplication on X and Z
 
-Width: # of dupes on X axis
-
+Width: # of dupes on X axis </br>
 Length: # of dupes on Z axis
 
 Offset variables:
+| Var Name | Description |
+| -------- | ----------- |
+| W | Width of object |
+| H | Height of object |
 
-W: width of object
-
-H: height of object
-
-
+![Rect Preview](rectexample_preview.png) ![Rect Values](rectexample_values.png)
 ### Cube Duplication
-
 Duplication on... you guessed it, X, Y and Z
 
-Width: # of dupes on X axis
-
-Length: # of dupes on Z axis
-
+Width: # of dupes on X axis </br>
+Length: # of dupes on Z axis </br>
 Height: # of dupes on Y axis
 
 Offset variables:
+| Var Name | Description |
+| -------- | ----------- |
+| W | Width of object |
+| H | Height of object |
 
-W: width of object
-
-H: Height of object
-
+![Cube Preview](cubeexample_preview.png) ![Cube Values](cubeexample_values.png)
 
 ### Offsets
 
@@ -58,14 +51,8 @@ H: Height of object
 
 Examples:
 
-3.404 * 2 : valid
+3.404 * 2 : valid </br>
+{varName} + 2 * (2 - 5) : valid </br>
+34^{varName} - 4 : valid </br>
 
-{varName} + 2 * (2 - 5) : valid
-
-34^{varName} - 4 : valid
-
-
-## TODO
-1. [ ] This needs a hella big refactor after adding in duplication shapes
-5. [ ] Add Gifs of working extension
-
+Note: Some of this code needs to be refactored after a couple of features were pushed out pretty fast
